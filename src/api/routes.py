@@ -22,10 +22,7 @@ async def root():
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
-    """
-    Upload a document and extract text
-    """
-    # Validate file type
+
     allowed = [".pdf", ".txt"]
     ext = Path(file.filename).suffix.lower()
     
@@ -35,25 +32,25 @@ async def upload_file(file: UploadFile = File(...)):
             detail=f"Only {allowed} allowed, got {ext}"
         )
     
-    # Save file
     file_path = settings.UPLOAD_DIR / file.filename
     
     try:
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        # Extract text
         text = extract_text(file_path)
         
-        # Preview: first 500 chars
-        preview = text[:500] + "..." if len(text) > 500 else text
+        from core.chunking import split_text
+        chunks = split_text(text, chunk_size=500, chunk_overlap=50)
         
         return {
             "filename": file.filename,
             "file_type": ext,
-            "status": "uploaded_and_processed",
+            "status": "processed",
             "char_count": len(text),
-            "text_preview": preview
+            "chunk_count": len(chunks),
+            "first_chunk": chunks[0] if chunks else "No text",
+            "sample_chunks": chunks[:3] if len(chunks) > 3 else chunks
         }
         
     except Exception as e:
@@ -62,9 +59,7 @@ async def upload_file(file: UploadFile = File(...)):
     finally:
         file.file.close()
 
-
 @router.get("/files")
 async def list_files():
-    """List uploaded files"""
     files = [f.name for f in settings.UPLOAD_DIR.iterdir() if f.is_file()]
     return {"files": files, "count": len(files)}
