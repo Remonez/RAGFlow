@@ -5,6 +5,9 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import settings
 from core.document import extract_text
+from services.embeddings import embed_texts, embed_query
+from services.vector_db import add_chunks, search
+
 
 router = APIRouter()
 
@@ -18,6 +21,26 @@ async def root():
         "status": "running"
     }
 
+
+
+@router.post("/query")
+async def query(question: str):
+
+    try:
+        # 1. Embed the question
+        query_vec = embed_query(question)
+        
+        # 2. Search vector DB
+        results = search(query_vec, top_k=3)
+        
+        return {
+            "question": question,
+            "results_found": len(results),
+            "matches": results
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/upload")
@@ -42,17 +65,21 @@ async def upload_file(file: UploadFile = File(...)):
         
         from core.chunking import split_text
         chunks = split_text(text, chunk_size=500, chunk_overlap=50)
+
+        embeddings = embed_texts(chunks)
+        
+        doc_id = file.filename.replace(" ", "_")
+        stored_count = add_chunks(doc_id, chunks, embeddings)
         
         return {
             "filename": file.filename,
             "file_type": ext,
-            "status": "processed",
+            "status": "indexed",
             "char_count": len(text),
             "chunk_count": len(chunks),
-            "first_chunk": chunks[0] if chunks else "No text",
-            "sample_chunks": chunks[:3] if len(chunks) > 3 else chunks
-        }
-        
+            "stored_in_db": stored_count,
+            "first_chunk_preview": chunks[0][:200] + "..." if chunks else "None"
+        }        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
