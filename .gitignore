@@ -214,3 +214,20 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project - NEVER COMMIT THESE
+uploads/
+chroma_db/
+*.sqlite3
+*.db
+*.bin
+*.parquet
+
+# Temporary files
+*.tmp
+*.log
