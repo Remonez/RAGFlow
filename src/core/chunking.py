@@ -1,4 +1,4 @@
-def split_text(text: str, chunk_size: int = 500, chunk_overlap: int = 50) -> list:
+def split_text(text: str, chunk_size: int = 500, chunk_overlap: int = 200) -> list:
 
     if not text or len(text) <= chunk_size:
         return [text] if text else []
@@ -9,8 +9,7 @@ def split_text(text: str, chunk_size: int = 500, chunk_overlap: int = 50) -> lis
     while start < len(text):
         end = start + chunk_size
         chunk = text[start:end]
-        
-        chunks.append(chunk)
+        chunks.append(chunk.strip())
         
         start += chunk_size - chunk_overlap
     

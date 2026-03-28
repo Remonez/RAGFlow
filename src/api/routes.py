@@ -78,7 +78,7 @@ async def upload_file(file: UploadFile = File(...)):
         text = extract_text(file_path)
         
         from core.chunking import split_text
-        chunks = split_text(text, chunk_size=500, chunk_overlap=50)
+        chunks = split_text(text, chunk_size=500, chunk_overlap=200)
 
         embeddings = embed_texts(chunks)
         
