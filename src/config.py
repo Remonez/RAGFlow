@@ -8,12 +8,12 @@ load_dotenv(dotenv_path=env_path)
 
 class Settings:
     
-    APP_NAME: str = os.getenv("APP_NAME", "RAGFlow")
-    DEBUG: bool = os.getenv("DEBUG", "true").lower() == "true"
-    VERSION: str = os.getenv("VERSION", "0.1.0")
+    APP_NAME: str = os.getenv("APP_NAME")
+    DEBUG: bool = os.getenv("DEBUG").lower() == "true"
+    VERSION: str = os.getenv("VERSION")
     
-    HOST: str = os.getenv("HOST", "0.0.0.0")
-    PORT: int = int(os.getenv("PORT", "8000"))
+    HOST: str = os.getenv("HOST")
+    PORT: int = int(os.getenv("PORT"))
     
     UPLOAD_DIR: Path = Path(__file__).parent.parent / "uploads"
 
