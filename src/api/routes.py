@@ -7,6 +7,7 @@ from config import settings
 from core.document import extract_text
 from services.embeddings import embed_texts, embed_query
 from services.vector_db import add_chunks, search
+from services.llm import generate_answer
 
 
 router = APIRouter()
@@ -23,25 +24,38 @@ async def root():
 
 
 
-@router.post("/query")
-async def query(question: str):
+@router.post("/ask")
+async def ask(question: str):
 
     try:
-        # 1. Embed the question
         query_vec = embed_query(question)
         
-        # 2. Search vector DB
-        results = search(query_vec, top_k=3)
+        chunks = search(query_vec, top_k=3)
+        
+        if not chunks:
+            return {
+                "question": question,
+                "answer": "No relevant documents found. Please upload documents first.",
+                "sources": []
+            }
+        
+        answer = generate_answer(question, chunks)
         
         return {
             "question": question,
-            "results_found": len(results),
-            "matches": results
+            "answer": answer,
+            "sources": [
+                {
+                    "text": c["text"][:200] + "...",
+                    "source": c["source"],
+                    "relevance": round(c["score"], 3)
+                }
+                for c in chunks
+            ]
         }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
