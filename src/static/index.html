@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RAGFlow - Document Q&A</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        h1 { color: #333; }
+        .section { border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        input, button { padding: 10px; margin: 5px 0; width: 100%; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #result { background: #f5f5f5; padding: 15px; margin-top: 10px; border-radius: 5px; white-space: pre-wrap; }
+        .loading { color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>🚀 RAGFlow - Document Q&A</h1>
+    <p>Upload a PDF/TXT file and ask questions about it.</p>
+
+    <div class="section">
+        <h2>1. Upload Document</h2>
+        <input type="file" id="fileInput" accept=".pdf,.txt">
+        <button onclick="uploadFile()">Upload</button>
+        <div id="uploadResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>2. Ask Question</h2>
+        <input type="text" id="questionInput" placeholder="What is this document about?">
+        <button onclick="askQuestion()">Ask</button>
+        <div id="answerResult"></div>
+    </div>
+
+    <script>
+        const API_URL = ''; // Same origin (relative URL)
+
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const resultDiv = document.getElementById('uploadResult');
+            
+            if (!fileInput.files[0]) {
+                resultDiv.innerHTML = 'Please select a file';
+                return;
+            }
+
+            resultDiv.innerHTML = '<span class="loading">Uploading...</span>';
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                resultDiv.innerHTML = `<strong>✅ Uploaded:</strong> ${data.filename}<br>
+                                      <strong>Chunks:</strong> ${data.chunk_count}<br>
+                                      <strong>Status:</strong> ${data.status}`;
+            } catch (error) {
+                resultDiv.innerHTML = `<strong style="color:red">Error:</strong> ${error.message}`;
+            }
+        }
+
+        async function askQuestion() {
+            const question = document.getElementById('questionInput').value;
+            const resultDiv = document.getElementById('answerResult');
+            
+            if (!question) {
+                resultDiv.innerHTML = 'Please enter a question';
+                return;
+            }
+
+            resultDiv.innerHTML = '<span class="loading">Thinking...</span>';
+
+            try {
+                const response = await fetch(`${API_URL}/ask?question=${encodeURIComponent(question)}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                let sourcesHtml = '';
+                if (data.sources && data.sources.length > 0) {
+                    sourcesHtml = '<br><br><strong>📚 Sources:</strong><ul>' +
+                        data.sources.map(s => `<li>${s.text.substring(0, 100)}... (relevance: ${s.relevance})</li>`).join('') +
+                        '</ul>';
+                }
+                
+                resultDiv.innerHTML = `<strong>❓ Question:</strong> ${data.question}<br><br>
+                                      <strong>💡 Answer:</strong> ${data.answer}${sourcesHtml}`;
+            } catch (error) {
+                resultDiv.innerHTML = `<strong style="color:red">Error:</strong> ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

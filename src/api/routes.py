@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import shutil
 import sys
@@ -8,6 +9,7 @@ from core.document import extract_text
 from services.embeddings import embed_texts, embed_query
 from services.vector_db import add_chunks, search
 from services.llm import generate_answer
+
 
 
 router = APIRouter()
@@ -21,7 +23,6 @@ async def root():
         "version": settings.VERSION,
         "status": "running"
     }
-
 
 
 @router.post("/ask")

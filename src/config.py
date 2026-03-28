@@ -16,6 +16,7 @@ class Settings:
     PORT: int = int(os.getenv("PORT"))
     
     UPLOAD_DIR: Path = Path(__file__).parent.parent / "uploads"
+    STATIC_DIR: Path = Path(__file__).parent / "static"
 
 
 settings = Settings()
