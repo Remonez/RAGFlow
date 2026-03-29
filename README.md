@@ -59,19 +59,6 @@ cp src/.env.example src/.env
 
 Open `src/.env` and update your `GEMINI_API_KEY`:
 
-```env
-APP_NAME="RAGFlow"
-VERSION="1.0.0"
-DEBUG=true
-HOST=0.0.0.0
-PORT=8000
-
-# API Keys
-GEMINI_API_KEY=your-gemini-key-here
-GEMINI_MODEL=gemini-1.5-flash
-```
-
----
 
 ## 🚀 Running the Application
 
