@@ -16,11 +16,17 @@ app.include_router(router)
 app.mount("/gui", StaticFiles(directory=str(settings.STATIC_DIR), html=True), name="gui")
 
 
+@app.on_event("startup")
+async def load_models():
+    from services.embeddings import get_model
+    get_model()
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
         "main:app",
         host=settings.HOST,
         port=settings.PORT,
-        reload=settings.DEBUG
+        reload=False
     )

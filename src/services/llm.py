@@ -2,7 +2,7 @@ import os
 import google.generativeai as genai
 
 
-def generate_answer(question: str, context_chunks: list) -> str:
+def generate_answer(question: str, context_chunks: list, history: list = None) -> str:
 
     api_key = os.getenv("GEMINI_API_KEY")
     
@@ -16,14 +16,22 @@ def generate_answer(question: str, context_chunks: list) -> str:
         for i, chunk in enumerate(context_chunks)
     ])
     
-    prompt = f"""Based on the following context, answer the question accurately.
+    conversation = ""
+    if history:
+        for msg in history[-6:]:
+            role = "User" if msg["role"] == "user" else "Assistant"
+            conversation += f"{role}: {msg['content']}\n\n"
+    
+    prompt = f"""You are a helpful document Q&A assistant. Answer based on the provided context and conversation history.
 
-Context:
+Context from documents:
 {context}
 
-Question: {question}
+Previous conversation:
+{conversation}
+User: {question}
 
-Provide a clear, concise answer based only on the context above."""
+Provide a clear, concise answer. If the answer isn't in the context, say so politely."""
 
     model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
     model = genai.GenerativeModel(model_name)

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import shutil
@@ -15,6 +16,16 @@ from services.llm import generate_answer
 router = APIRouter()
 
 
+class Message(BaseModel):
+    role: str
+    content: str
+
+
+class AskRequest(BaseModel):
+    question: str
+    messages: list[Message] = []
+
+
 
 @router.get("/")
 async def root():
@@ -26,24 +37,26 @@ async def root():
 
 
 @router.post("/ask")
-async def ask(question: str):
+async def ask(body: AskRequest):
 
     try:
-        query_vec = embed_query(question)
-        
+        query_vec = embed_query(body.question)
+
         chunks = search(query_vec, top_k=3)
-        
+
         if not chunks:
             return {
-                "question": question,
+                "question": body.question,
                 "answer": "No relevant documents found. Please upload documents first.",
-                "sources": []
+                "sources": [],
+                "messages": body.messages
             }
-        
-        answer = generate_answer(question, chunks)
-        
+
+        history = [{"role": m.role, "content": m.content} for m in body.messages]
+        answer = generate_answer(body.question, chunks, history)
+
         return {
-            "question": question,
+            "question": body.question,
             "answer": answer,
             "sources": [
                 {
@@ -54,9 +67,13 @@ async def ask(question: str):
                 for c in chunks
             ]
         }
-        
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        with open("error.log", "a") as f:
+            f.write(f"/ask error: {type(e).__name__}: {str(e)}\n")
+            traceback.print_exc(file=f)
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)}")
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
