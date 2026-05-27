@@ -17,7 +17,7 @@ RAGFlow is a robust Retrieval-Augmented Generation (RAG) system designed to prov
 
 ## 🎥 Demo
 
-![Demo](demo.mp4)
+<video src="demo.mp4" controls width="100%"></video>
 
 ---
 
