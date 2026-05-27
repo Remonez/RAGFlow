@@ -15,10 +15,9 @@ RAGFlow is a robust Retrieval-Augmented Generation (RAG) system designed to prov
 
 ---
 
-## 🎥 Demo
 
-[[[Watch demo video](demo.mp4)](https://github.com/user-attachments/assets/a6b575e7-d63e-41b6-8bca-bed514f1146c)
-](https://github.com/user-attachments/assets/a6b575e7-d63e-41b6-8bca-bed514f1146c)---
+[🎥 Demo](https://github.com/user-attachments/assets/a6b575e7-d63e-41b6-8bca-bed514f1146c)
+
 
 ## 📋 Prerequisites
 
